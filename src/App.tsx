@@ -32,6 +32,11 @@ function App() {
         if(entry.isIntersecting) {
           const element = entry.target;
           console.log('The intersecting element', element.innerHTML);
+
+          // Fix: we dont to retrigger the callback each time when someone scrolls up and down, instead its required only on the first time
+          if(element.className.includes('list-item')){
+            observer.unobserve(element);
+          }
         }
       })
     }, options)
