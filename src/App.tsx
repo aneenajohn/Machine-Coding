@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './App.css'
 
 function App() {
@@ -15,8 +15,37 @@ function App() {
     "Dream big and dare to fail. – Norman Vaughan",
   ];
 
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if(!rootRef.current) {
+      return;
+    }
+
+    const options = {
+      root: rootRef.current as HTMLDivElement, 
+      rootMargin: '0px',
+      threshold: 1
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if(entry.isIntersecting) {
+          const element = entry.target;
+          console.log('The intersecting element', element.innerHTML);
+        }
+      })
+    }, options)
+
+    const target = document.querySelector('.trigger') // document.querySelector('.trigger');
+    observer.observe(target)
+
+    return () => {
+      observer.disconnect();
+    }
+  }, []);
+
   return (
-    <div className="container">
+    <div className="container" ref={rootRef}>
       {/* <ol>
         {quotes.map((quote: string, index: number) => {
           return (
@@ -32,6 +61,7 @@ function App() {
             {quote}
           </li>
         ))}
+        <li className="trigger">Load more ...</li>
       </ol>
     </div>
   )
