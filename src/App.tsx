@@ -37,7 +37,12 @@ function App() {
     }, options)
 
     const target = document.querySelector('.trigger') // document.querySelector('.trigger');
-    observer.observe(target)
+    observer.observe(target);
+
+    const listItems = document.querySelectorAll('.list-item');
+    listItems.forEach((item) => {
+      observer.observe(item)
+    })
 
     return () => {
       observer.disconnect();
