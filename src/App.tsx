@@ -16,6 +16,7 @@ function App() {
   ];
 
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLLIElement | null>(null)
 
   useEffect(() => {
     if(!rootRef.current) {
@@ -28,16 +29,16 @@ function App() {
       threshold: 1
     }
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if(entry.isIntersecting) {
-          const element = entry.target;
-          console.log('The intersecting element', element.innerHTML);
-        }
-      })
+      console.log('Entries', entries);
+      if(entries[0].isIntersecting) {
+        const element = entries[0].target;
+        console.log(`The intersecting element ${element.innerHTML}`)
+      }
     }, options)
 
-    const target = document.querySelector('.trigger') // document.querySelector('.trigger');
-    observer.observe(target);
+    if(triggerRef.current) {
+      observer.observe(triggerRef.current as HTMLLIElement)
+    }
 
     return () => {
       observer.disconnect();
@@ -52,7 +53,7 @@ function App() {
             {quote}
           </li>
         ))}
-        <li className="trigger">Load more ...</li>
+        <li className="trigger" ref={triggerRef}>Load more ...</li>
       </ol>
     </div>
   )
