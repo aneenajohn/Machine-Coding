@@ -32,22 +32,12 @@ function App() {
         if(entry.isIntersecting) {
           const element = entry.target;
           console.log('The intersecting element', element.innerHTML);
-
-          // Fix: we dont to retrigger the callback each time when someone scrolls up and down, instead its required only on the first time
-          if(element.className.includes('list-item')){
-            observer.unobserve(element);
-          }
         }
       })
     }, options)
 
     const target = document.querySelector('.trigger') // document.querySelector('.trigger');
     observer.observe(target);
-
-    const listItems = document.querySelectorAll('.list-item');
-    listItems.forEach((item) => {
-      observer.observe(item)
-    })
 
     return () => {
       observer.disconnect();
@@ -56,15 +46,6 @@ function App() {
 
   return (
     <div className="container" ref={rootRef}>
-      {/* <ol>
-        {quotes.map((quote: string, index: number) => {
-          return (
-            <li key={quote} className="list-item">
-              {quote}
-            </li>
-          )
-        })}
-      </ol> */}
       <ol>
         {quotes.map((quote: string, _: number) => (
           <li key={quote} className="list-item">
