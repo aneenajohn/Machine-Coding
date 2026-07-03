@@ -79,7 +79,7 @@ function App() {
     console.log('Quotes:', quotes);
     setQuoteList(prev => [...prev, ...quotes]);
     console.log('Current page:', page.current);
-    page.current = page.current++;
+    page.current = page.current + 1;
 
     loading.current = false;
   }
@@ -96,18 +96,27 @@ function App() {
     const options = {
       root: rootRef.current as HTMLDivElement, 
       rootMargin: '0px',
-      threshold: 1
+      threshold: 0.7
     }
     const observer = new IntersectionObserver((entries) => {
       console.log('Entries', entries);
-      if(entries[0].isIntersecting) {
-        const element = entries[0].target;
-        console.log(`The intersecting element ${element.innerHTML}`)
-        fetchNext();
-      }
+      // if(entries[0].isIntersecting) {
+      //   const element = entries[0].target;
+      //   console.log(`The intersecting element ${element.innerHTML}`)
+      //   fetchNext();
+      // }
+
+      entries.forEach((entry) => {
+        console.log(entry.isIntersecting, entry.intersectionRatio);
+        if (entry.isIntersecting) {
+          fetchNext();
+        }
+      });
+
     }, options)
 
     if(triggerRef.current) {
+      // observer.disconnect();
       observer.observe(triggerRef.current as HTMLLIElement)
     }
 
