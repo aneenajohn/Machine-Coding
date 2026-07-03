@@ -1,22 +1,92 @@
 import { useState, useRef, useEffect } from 'react'
 import './App.css'
 
+// {
+//   "meta": {
+//     "currentPage": 2,
+//     "hasMore": true,
+//     "pageSize": 5,
+//     "total": 49
+//   },
+//   "quotes": [
+//     {
+//       "id": 6,
+//       "author": "Eleanor Roosevelt",
+//       "text": "The future belongs to those who believe in the beauty of their dreams."
+//     }
+//   ]
+// }
+
+type Meta = {
+  currentPage: number,
+  hasMore: boolean,
+  pageSize: number,
+  total: number
+}
+
+type Quote = {
+  id: number,
+  text: string,
+  author: string
+}
+
+type PaginatedQuotes = {
+  meta: Meta,
+  quotes: Quote[]
+};
+
+// const page = 1;
+// const limit = 15;
+
+const fetchQuotes = async (page: number =1, limit=15):Promise<PaginatedQuotes> => {
+  // const result = fetch(`https://dummyjson.com/quotes?limit=${limit}&skip=${(page - 1) * limit}`)
+  const data = await fetch(
+    `https://dummyjson.com/quotes?limit=${limit}&skip=${(page - 1) * limit}`
+  ).then((res) => res.json());
+
+  const result = {
+    meta: {
+      currentPage: page,
+      hasMore: data.skip + data.limit < data.total,
+      pageSize: data.limit,
+      total: data.total,
+    },
+    quotes: data.quotes.map((q: any) => ({
+      id: q.id,
+      author: q.author,
+      text: q.quote,
+    })),
+  };
+
+  return result;
+}
+
 function App() {
   
-  const quotes: string[] = [
-    "The only limit to our realization of tomorrow will be our doubts of today. – Franklin D. Roosevelt",
-    "Do what you can, with what you have, where you are. – Theodore Roosevelt",
-    "Don’t count the days, make the days count. – Muhammad Ali",
-    "Hardships often prepare ordinary people for an extraordinary destiny. – C.S. Lewis",
-    "Success is walking from failure to failure with no loss of enthusiasm. – Winston Churchill",
-    "It does not matter how slowly you go as long as you do not stop. – Confucius",
-    "You miss 100% of the shots you don’t take. – Wayne Gretzky",
-    "Strive not to be a success, but rather to be of value. – Albert Einstein",
-    "Dream big and dare to fail. – Norman Vaughan",
-  ];
-
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLLIElement | null>(null)
+  const [quoteList, setQuoteList] = useState<Quote[]>([])
+
+  const page = useRef<number>(1);
+  const loading = useRef<boolean>(false);
+
+  const fetchNext = async () => {
+
+    if (loading.current) return;
+    loading.current = true;
+
+    const { meta, quotes } = await fetchQuotes(page.current);
+    console.log('Quotes:', quotes);
+    setQuoteList(prev => [...prev, ...quotes]);
+    console.log('Current page:', page.current);
+    page.current = page.current++;
+
+    loading.current = false;
+  }
+
+  useEffect(() => {
+    fetchNext();
+  }, [])
 
   useEffect(() => {
     if(!rootRef.current) {
@@ -33,6 +103,7 @@ function App() {
       if(entries[0].isIntersecting) {
         const element = entries[0].target;
         console.log(`The intersecting element ${element.innerHTML}`)
+        fetchNext();
       }
     }, options)
 
@@ -48,9 +119,9 @@ function App() {
   return (
     <div className="container" ref={rootRef}>
       <ol>
-        {quotes.map((quote: string, _: number) => (
-          <li key={quote} className="list-item">
-            {quote}
+        {quoteList.map((quote: string, _: number) => (
+          <li key={quote.id} className="list-item">
+            {quote.text} - {quote.author}
           </li>
         ))}
         <li className="trigger" ref={triggerRef}>Load more ...</li>
